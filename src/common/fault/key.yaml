@@ -1,0 +1,15 @@
+# auth
+auth_invalid_token:
+  code: 1000
+  message: invalid token
+auth_token_expire:
+  code: 1001
+  message: token expire
+
+# user
+user_not_found:
+  code: 2000
+  message: user not found
+user_already_exist:
+  code: 2001
+  message: user already exist

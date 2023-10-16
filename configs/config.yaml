@@ -1,0 +1,22 @@
+mode: dev
+
+server:
+  name: kits-api
+  port: :8080
+  prefix: apis
+
+postgresql:
+  host: localhost
+  port: 5432
+  user: kits
+  password: secret
+  db_name: kits_db
+  ssl_mode: disable
+  auto_migrate: false
+  max_life_time: 300
+
+redis:
+  hosts:
+    - localhost:6379
+  username: ''
+  password: 'secret_redis'
