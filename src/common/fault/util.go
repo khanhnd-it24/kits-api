@@ -11,7 +11,7 @@ type attrHolder interface {
 }
 
 type tagHolder interface {
-	GetTag() Tag
+	Tag() Tag
 }
 
 func IsServerErr(err error) bool {
@@ -30,7 +30,7 @@ func getRootTag(err error) (Tag, bool) {
 
 	tagHolder, ok := err.(tagHolder)
 	if ok {
-		return tagHolder.GetTag(), true
+		return tagHolder.Tag(), true
 	}
 
 	return getRootTag(errors.Unwrap(err))
@@ -43,7 +43,7 @@ func IsTag(err error, tag Tag) bool {
 
 	tagHolder, ok := err.(tagHolder)
 	if ok {
-		return tagHolder.GetTag() == tag
+		return tagHolder.Tag() == tag
 	}
 
 	return IsTag(errors.Unwrap(err), tag)
@@ -56,7 +56,7 @@ func OneOfTags(err error, tags ...Tag) bool {
 
 	tagHolder, ok := err.(tagHolder)
 	if ok {
-		tag := tagHolder.GetTag()
+		tag := tagHolder.Tag()
 		for _, v := range tags {
 			if v == tag {
 				return true

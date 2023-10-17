@@ -20,7 +20,7 @@ func NewUserService(userRepo domains.UserRepo, hash hashprovider.HashProvider) *
 	}
 }
 
-func (u *UserService) Create(ctx context.Context, userCreate *domains.UserCreate) (userId int64, err error) {
+func (u *UserService) Create(ctx context.Context, userCreate *domains.UserCreate) (int64, error) {
 	caller := "UserService.Create"
 	existedUser, err := u.userRepo.FindByUsername(ctx, userCreate.Username)
 

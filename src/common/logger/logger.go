@@ -39,7 +39,9 @@ func (s StandardLogger) getScopedLogger(ctx context.Context) []interface{} {
 		return out
 	}
 	for k, v := range ctxMeta {
-		out = append(out, k, v)
+		if v != nil && v != "" {
+			out = append(out, k, v)
+		}
 	}
 	return out
 }
@@ -63,20 +65,29 @@ func (s StandardLogger) Debug(ctx context.Context, msg string, v ...interface{})
 
 func (s StandardLogger) Warn(ctx context.Context, err error, msg string, v ...interface{}) {
 	scoped := s.getScopedLogger(ctx)
-	scoped = append(scoped, "err", err)
-	s.l.Warnw(fmt.Sprintf(msg, v...), scoped)
+	scoped = append(scoped, "err", err.Error())
+	if len(scoped) > 0 {
+		s.l.Warnw(fmt.Sprintf(msg, v...), scoped)
+	}
+	s.l.Warnw(fmt.Sprintf(msg, v...))
 }
 
 func (s StandardLogger) Error(ctx context.Context, err error, msg string, v ...interface{}) {
 	scoped := s.getScopedLogger(ctx)
-	scoped = append(scoped, "err", err)
-	s.l.Errorw(fmt.Sprintf(msg, v...), scoped)
+	scoped = append(scoped, "err", err.Error())
+	if len(scoped) > 0 {
+		s.l.Errorw(fmt.Sprintf(msg, v...), scoped)
+	}
+	s.l.Errorw(fmt.Sprintf(msg, v...))
 }
 
 func (s StandardLogger) Fatal(ctx context.Context, err error, msg string, v ...interface{}) {
 	scoped := s.getScopedLogger(ctx)
-	scoped = append(scoped, "err", err)
-	s.l.Fatalw(fmt.Sprintf(msg, v...), scoped)
+	scoped = append(scoped, "err", err.Error())
+	if len(scoped) > 0 {
+		s.l.Fatalw(fmt.Sprintf(msg, v...), scoped)
+	}
+	s.l.Fatalw(fmt.Sprintf(msg, v...))
 }
 
 func SyslogTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
