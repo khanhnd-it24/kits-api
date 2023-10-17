@@ -6,7 +6,7 @@ import (
 	"kits/api/src/bootstrap"
 )
 
-func createApp(pathCf string, env string) *fx.App {
+func createApp(pathCf string) *fx.App {
 	return fx.New(
 		bootstrap.BuildFxLogger(),
 		bootstrap.BuildAppConfig(pathCf),
@@ -21,13 +21,11 @@ func createApp(pathCf string, env string) *fx.App {
 
 func main() {
 	var pathConfig string
-	var env string
 
 	flag.StringVar(&pathConfig, "config", "configs/config.yaml", "path to config file")
-	flag.StringVar(&env, "env", "public", "runnable service")
 	flag.Parse()
 
-	app := createApp(pathConfig, env)
+	app := createApp(pathConfig)
 	// when call run, app automatic handle graceful shutdown
 	app.Run()
 }
