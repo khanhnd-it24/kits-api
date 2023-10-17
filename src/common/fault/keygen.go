@@ -3,27 +3,30 @@
 package fault
 
 var (
-	KeyAuthInvalidToken = "auth_invalid_token"
-	KeyAuthTokenExpire  = "auth_token_expire"
-	KeyUserNotFound     = "user_not_found"
-	KeyUserAlreadyExist = "user_already_exist"
+	KeyAuthInvalidToken    = "auth_invalid_token"
+	KeyAuthTokenExpire     = "auth_token_expire"
+	KeyAuthInvalidIdentify = "auth_invalid_identify"
+	KeyUserNotFound        = "user_not_found"
+	KeyUserAlreadyExist    = "user_already_exist"
 )
 
 var (
 	keyFactory = map[string]string{
-		KeyAuthInvalidToken: "invalid token",
-		KeyAuthTokenExpire:  "token expire",
-		KeyUserNotFound:     "user not found",
-		KeyUserAlreadyExist: "user already exist",
+		KeyAuthInvalidToken:    "invalid token",
+		KeyAuthTokenExpire:     "token expire",
+		KeyAuthInvalidIdentify: "invalid identify",
+		KeyUserNotFound:        "user not found",
+		KeyUserAlreadyExist:    "user already exist",
 	}
 )
 
 var (
 	codeFactory = map[string]int64{
-		KeyAuthInvalidToken: 1000,
-		KeyAuthTokenExpire:  1001,
-		KeyUserNotFound:     2000,
-		KeyUserAlreadyExist: 2001,
+		KeyAuthInvalidToken:    1000,
+		KeyAuthTokenExpire:     1001,
+		KeyAuthInvalidIdentify: 1002,
+		KeyUserNotFound:        2000,
+		KeyUserAlreadyExist:    2001,
 	}
 )
 

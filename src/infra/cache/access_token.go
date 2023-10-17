@@ -1,4 +1,4 @@
-package cache
+package infracache
 
 import (
 	"context"

@@ -20,3 +20,11 @@ redis:
     - localhost:6379
   username: ''
   password: 'secret_redis'
+
+aes:
+  refresh_token:
+    key: 2B346A456B444C5361575879776D4867344439495158702F6135546175755275
+    expire: 720h
+  access_token:
+    key: 78662B4B374C43395178764D544C66613938413774507373575364722B387830
+    expire: 24h

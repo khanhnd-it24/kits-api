@@ -10,6 +10,11 @@ type AccessToken struct {
 	ExpireTime time.Duration
 }
 
+type TokenAes struct {
+	UserId    int64
+	ExpiredAt string
+}
+
 type AccessTokenCache interface {
 	Save(ctx context.Context, userId int64, token *AccessToken) error
 	FindByUserId(ctx context.Context, userId int64) (*AccessToken, error)

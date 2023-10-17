@@ -5,6 +5,9 @@ auth_invalid_token:
 auth_token_expire:
   code: 1001
   message: token expire
+auth_invalid_identify:
+  code: 1002
+  message: invalid identify
 
 # user
 user_not_found:

@@ -7,6 +7,7 @@ import (
 	"kits/api/src/common/cache"
 	"kits/api/src/common/logger"
 	apppostgres "kits/api/src/common/postgres"
+	infracache "kits/api/src/infra/cache"
 	"kits/api/src/infra/postgres/repos"
 )
 
@@ -48,5 +49,6 @@ func BuildRepos() fx.Option {
 func BuildCaches() fx.Option {
 	return fx.Options(
 		fx.Provide(cache.NewRedisClient),
+		fx.Provide(infracache.NewAccessTokenCache),
 	)
 }

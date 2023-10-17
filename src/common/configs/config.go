@@ -3,6 +3,7 @@ package configs
 import (
 	"github.com/spf13/viper"
 	"kits/api/src/core/enums"
+	"time"
 )
 
 type Config struct {
@@ -27,6 +28,10 @@ type Config struct {
 		Username string   `mapstructure:"username"`
 		Password string   `mapstructure:"password"`
 	} `mapstructure:"redis"`
+	Aes map[string]struct {
+		Key    string        `mapstructure:"key"`
+		Expire time.Duration `mapstructure:"expire"`
+	} `mapstructure:"aes"`
 }
 
 func NewAppConfig(pathConfig string) (*Config, error) {
