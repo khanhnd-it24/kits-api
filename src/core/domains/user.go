@@ -30,6 +30,10 @@ type AuthUser struct {
 	Password string
 }
 
+type AuthRefreshToken struct {
+	Token string
+}
+
 type UserRepo interface {
 	FindByUsername(ctx context.Context, username string) (*User, error)
 	FindById(ctx context.Context, id string) (*User, error)

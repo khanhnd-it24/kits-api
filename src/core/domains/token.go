@@ -31,6 +31,7 @@ type RefreshToken struct {
 
 type RefreshTokenRepo interface {
 	Save(ctx context.Context, token *RefreshToken) (*RefreshToken, error)
+	FindByToken(ctx context.Context, token string) (*RefreshToken, error)
 	FindByUserIdAndDelete(ctx context.Context, userId int64) error
 }
 

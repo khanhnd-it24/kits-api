@@ -67,7 +67,7 @@ func (a *AuthService) Login(ctx context.Context, authUser *domains.AuthUser) (*d
 			SetKey(fault.KeyAuthInvalidIdentify)
 	}
 
-	token, err := a.generateToken(ctx, user)
+	token, err := a.generateToken(ctx, user.Id)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,28 +75,31 @@ func (a *AuthService) Login(ctx context.Context, authUser *domains.AuthUser) (*d
 	return token, user, nil
 }
 
-func (a *AuthService) generateToken(ctx context.Context, user *domains.User) (*domains.Token, error) {
+func (a *AuthService) generateToken(ctx context.Context, userId int64, refreshTokenIds ...int64) (*domains.Token, error) {
 	caller := "AuthService.generateToken"
-	refreshTokenString, refreshExpiredAt, err := a.generateAesToken(user, a.refreshAesProvider, a.refreshExpire)
+	refreshTokenString, refreshExpiredAt, err := a.generateAesToken(userId, a.refreshAesProvider, a.refreshExpire)
 	refreshToken := &domains.RefreshToken{
-		UserId:    user.Id,
+		UserId:    userId,
 		Token:     refreshTokenString,
 		ExpiredAt: refreshExpiredAt,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
+	}
+	if len(refreshTokenIds) > 0 {
+		refreshToken.Id = refreshTokenIds[0]
 	}
 
 	refreshToken, err = a.refreshTokenRepo.Save(ctx, refreshToken)
 	if err != nil {
 		return nil, fault.Wrapf(err, "[%v] failed to save refresh token", caller)
 	}
-	accessTokenString, _, err := a.generateAesToken(user, a.accessAesProvider, a.accessExpire)
+	accessTokenString, _, err := a.generateAesToken(userId, a.accessAesProvider, a.accessExpire)
 	accessToken := &domains.AccessToken{
 		Token:      accessTokenString,
 		ExpireTime: a.accessExpire,
 	}
 
-	err = a.accessTokenCache.Save(ctx, user.Id, accessToken)
+	err = a.accessTokenCache.Save(ctx, userId, accessToken)
 	if err != nil {
 		return nil, fault.Wrapf(err, "[%v] failed to save access token", caller)
 	}
@@ -108,12 +111,12 @@ func (a *AuthService) generateToken(ctx context.Context, user *domains.User) (*d
 	}, nil
 }
 
-func (a *AuthService) generateAesToken(user *domains.User, provider *aes.GcmProvider, expireTime time.Duration) (string, time.Time, error) {
+func (a *AuthService) generateAesToken(userId int64, provider *aes.GcmProvider, expireTime time.Duration) (string, time.Time, error) {
 	caller := "AuthService.generateRefreshToken"
 
 	expiredAt := time.Now().Add(expireTime)
 	token := &domains.TokenAes{
-		UserId:    user.Id,
+		UserId:    userId,
 		ExpiredAt: expiredAt.Format(time.RFC3339),
 	}
 
@@ -130,4 +133,59 @@ func (a *AuthService) generateAesToken(user *domains.User, provider *aes.GcmProv
 	}
 
 	return base64.StdEncoding.EncodeToString(cipherTokenBytes), expiredAt, nil
+}
+
+func (a *AuthService) RefreshToken(ctx context.Context, authRefreshToken *domains.AuthRefreshToken) (*domains.Token, error) {
+	caller := "AuthService.RefreshToken"
+	refreshToken, err := a.refreshTokenRepo.FindByToken(ctx, authRefreshToken.Token)
+
+	if fault.IsTag(err, fault.TagNotFound) {
+		return nil, fault.Wrapf(err, "[%v] token %s invalid", caller, authRefreshToken.Token).
+			SetTag(fault.TagUnauthenticated).
+			SetKey(fault.KeyAuthInvalidToken)
+	}
+
+	if err != nil {
+		return nil, fault.Wrapf(err, "[%v] failed to find refresh token", caller)
+	}
+
+	err = a.checkRefreshToken(refreshToken)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := a.generateToken(ctx, refreshToken.UserId, refreshToken.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return token, nil
+}
+
+func (a *AuthService) checkRefreshToken(refreshToken *domains.RefreshToken) error {
+	caller := "AuthService.checkRefreshToken"
+	refreshTokenDecode, err := base64.StdEncoding.DecodeString(refreshToken.Token)
+	if err != nil {
+		return fault.Wrapf(err, "[%v] failed to decode refresh token", caller).SetTag(fault.TagInternal)
+	}
+	byteRefreshTokenAes, err := a.refreshAesProvider.Open(refreshTokenDecode)
+	if err != nil {
+		return fault.Wrapf(err, "[%v] failed to open refresh token", caller).SetTag(fault.TagInternal)
+	}
+	var refreshTokenAes domains.TokenAes
+	if err := json.Unmarshal(byteRefreshTokenAes, &refreshTokenAes); err != nil {
+		return fault.Wrapf(err, "[%v] failed to unmarshal refresh token", caller).SetTag(fault.TagInternal)
+	}
+
+	if refreshTokenAes.UserId != refreshToken.UserId {
+		return fault.Wrapf(err, "[%v] user id not compare", caller).
+			SetTag(fault.TagUnauthenticated).SetKey(fault.KeyAuthInvalidToken)
+	}
+
+	if refreshToken.ExpiredAt.Before(time.Now()) {
+		return fault.Wrapf(err, "[%v] token expire", caller).
+			SetTag(fault.TagUnauthenticated).SetKey(fault.KeyAuthTokenExpire)
+	}
+
+	return nil
 }

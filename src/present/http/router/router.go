@@ -51,5 +51,6 @@ func registerAuthRouters(root *gin.RouterGroup, in RoutersIn) {
 	{
 		authRouter.POST("/sign-up", in.UserCtrl.Create)
 		authRouter.POST("/sign-in", in.AuthCtrl.Login)
+		authRouter.POST("/refresh-token", in.AuthCtrl.RefreshToken)
 	}
 }
